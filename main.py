@@ -9,6 +9,20 @@ from src.PageWorker.PageWoker import PageWorker
 
 
 class App(QWidget):
+
+    def keyPressEvent(self, event):
+        # если нажата клавиша F11
+        if event.key() == Qt.Key.Key_F11:
+            # если в полный экран 
+            if self.isFullScreen():
+                # вернуть прежнее состояние
+                self.showNormal()
+            else:
+                # иначе во весь экран
+                self.showFullScreen()
+        elif event.key() == Qt.Key.Key_Escape:
+            self.close()
+
     def __init__(self):
         super().__init__()
         self.title = 'EcoPrint'

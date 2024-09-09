@@ -1,20 +1,16 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 
-
-
+import time
 
 class PageWorkerThread(QThread):
     '''
-    Выполняется в отдельном потоке бесконечно!\n
-    Данный класс отвечает за работу:
-    1. Поиск подключенных usb-носителей
-    2. Автоматичекое переключение между страницами
-    3. ... \n
     ***Находится в разработке!***
     '''
-    def __init__(self, parent=None):
-        super().__init__(self, parent)
+    def __init__(self):
+        super().__init__()
 
-    def initUI(self):
-        pass
+    def run(self):
+        while True:
+            time.sleep(1)
+            print("run")
