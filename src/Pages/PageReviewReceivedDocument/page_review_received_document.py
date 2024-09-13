@@ -6,6 +6,11 @@ import math
 import sys
 
 class PageReviewReceivedDocument(QWidget):
+
+    Slot(str)
+    def slot_document_selected_for_printing(self, fullPath):
+        print(fullPath)
+
     def __init__(self):
         super().__init__()
         self.initUI()

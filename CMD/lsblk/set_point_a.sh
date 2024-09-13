@@ -1,1 +1,1 @@
-lsblk -rno name,mountpoint | grep -i sd > ./CMD/lsblk/files/inputa
+lsblk -rno mountpoint | grep -i /media/ > ./CMD/lsblk/files/inputa

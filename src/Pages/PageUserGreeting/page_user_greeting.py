@@ -15,7 +15,7 @@ class PageUserGreeting(QWidget):
 
     Slot()
     def slot_btn_usb_clicked(self):
-        self.signal_btn_usb_clicked.emit()
+        self.msgBox.exec()
 
     Slot()
     def slot_btn_tg_clicked(self):
@@ -29,8 +29,11 @@ class PageUserGreeting(QWidget):
     def initUI(self):
 
         self.upper_label = QLabel("Выберите источник")
+        self.upper_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-
+        self.msgBox = QMessageBox()
+        self.msgBox.setText("Вставьте usb-накопитель")
+        
         self.btn_usb = QPushButton()
         self.btn_usb.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
         self.btn_usb.setIcon(QIcon('./icons/usb-drive.png'))
@@ -59,5 +62,5 @@ class PageUserGreeting(QWidget):
 
 
         main_layout = QVBoxLayout(self)
-        # main_layout.addWidget(self.upper_label, 1)
-        main_layout.addLayout(c2_layout, 9)
+        main_layout.addWidget(self.upper_label, 1)
+        main_layout.addLayout(c2_layout, 30)

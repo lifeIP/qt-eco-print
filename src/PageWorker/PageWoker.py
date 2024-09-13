@@ -1,17 +1,80 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 
-from src.PageWorker.PageWorkerThread import PageWorkerThread
+# from src.PageWorker.PageWorkerThread import PageWorkerThread
 import time
 import os
 import subprocess
+import socket
+
+
+class SocketThread(QThread):
+    
+    def __init__(self):
+        super().__init__()
+        self.session_status = 0
+        self.session_id = ''
+
+    def __del__(self):
+        self.client_socket.close()
+
+    def sendData(self, msg):
+        self.client_socket.send(msg.encode())
+
+    def recvData(self):
+        return self.client_socket.recv(1024).decode()
+    
+    Slot(int)
+    def slot_set_session_status(self, session_status):
+        self.session_status = session_status
+
+
+    Slot(str)
+    def slot_set_session_id(self, session_id):
+        self.session_id = session_id
+
+    
+    signal_fileChanged = Signal(str)
+
+    
+    def run(self):
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind(('0.0.0.0', 12345))  # Привязываем сокет к IP-адресу и порту
+        self.server_socket.listen(1)  # Прослушиваем входящие соединения
+        self.client_socket, self.client_address = self.server_socket.accept()
+    
+        while True:
+            msg = self.recvData()
+            session_id = msg.split('~')[0]
+            comand = msg.split('~')[1]
+
+            # if self.session_id != session_id:
+            #     self.sendData("-1")
+            #     continue
+
+            if comand == "status":
+                self.sendData(f"{self.session_status}")
+
+            elif comand == "session_activate":
+                self.session_status = 1
+                self.sendData(str(self.session_status))
+
+            elif comand == "session_deactivate":
+                self.session_status = 0
+                self.sendData(str(self.session_status))
+
+            else:
+                filePath = msg.split('~')
+                self.signal_fileChanged.emit(filePath[1])
+                self.sendData("Ok")
+            
 
 class PageWorkerThread(QThread):
     def __init__(self):
         super().__init__()
         self.flag:int = 0
 
-    signal_usb_connected = Signal()
+    signal_usb_connected = Signal(str)
     signal_usb_disconnected = Signal()
 
 
@@ -39,9 +102,10 @@ class PageWorkerThread(QThread):
         self.slot_lsblk_set_difference()
 
         with open("./CMD/lsblk/files/difference", "r") as file:
-            if len(file.readlines()) != 0:
+            lines = file.readlines()
+            if len(lines) != 0:
                 if self.flag != 1:
-                    self.signal_usb_connected.emit()
+                    self.signal_usb_connected.emit(lines[0])
                     self.flag = 1
             else:
                 if self.flag != 2:
@@ -79,14 +143,12 @@ class PageWorkerThread(QThread):
         self.slot_xinput_set_point_b()
         self.slot_xinput_set_difference_disable()
 
-
+    
     def run(self):
-        
         # Устанавливать начальные точки лучше где-то в другом месте. 
         # Возникает ошибка, если при запуске программы уже воткнута флешка.
         self.slot_lsblk_set_point_a()
         self.slot_xinput_set_point_a()
-        
         
         while True:
             # поиск подключенных usb-накопителей
@@ -106,19 +168,39 @@ class PageWorker(QWidget):
         self.qsLayout.setCurrentIndex(2)
 
 
-    Slot()
-    def slot_usb_connected(self):
+    Slot(str)
+    def slot_usb_connected(self, path:str):
+        # Связано с PageWorkerThread
         if self.qsLayout.currentIndex() == 0:
             self.qsLayout.setCurrentIndex(1)
+            self.signal_loadFiles.emit(path)
+            # print("slot: ", path)
 
         print("slot_usb_connected")
 
     Slot()
     def slot_usb_disconnected(self):
+        # Связано с PageWorkerThread
         if self.qsLayout.currentIndex() == 1:
             self.qsLayout.setCurrentIndex(0)
         print("slot_usb_disconnected")
 
+
+
+
+
+    signal_review_document_changed = Signal(str)
+
+    Slot(str)
+    def slot_tg_file_changed(self, filePath):
+
+        self.signal_review_document_changed.emit(f"../tgbot-global-eco-print/documents/{filePath}")
+        self.qsLayout.setCurrentIndex(3)
+
+
+
+
+    signal_loadFiles = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -134,12 +216,17 @@ class PageWorker(QWidget):
 
         from src.Pages.PageSelectingPrintSource.page_selecting_print_source import PageSelectingPrintSource
         self.selectingPrintSource = PageSelectingPrintSource()
+        self.signal_loadFiles.connect(self.selectingPrintSource.slot_loadFiles)
+        
 
         from src.Pages.PageQrTelegram.page_qr_telegram import PageQrTelegram
         self.pageQrTelegram = PageQrTelegram()
+        
 
         from src.Pages.PageReviewReceivedDocument.page_review_received_document import PageReviewReceivedDocument
         self.reviewReceivedDocument = PageReviewReceivedDocument()
+        self.selectingPrintSource.signal_document_selected_for_printing.connect(self.reviewReceivedDocument.slot_document_selected_for_printing)
+        
 
         from src.Pages.PagePaymentForPrinting.page_payment_for_printing import PagePaymentForPrinting
         self.paymentForPrinting = PagePaymentForPrinting()
@@ -173,3 +260,8 @@ class PageWorker(QWidget):
         self.wthread.signal_usb_connected.connect(self.slot_usb_connected)
         self.wthread.signal_usb_disconnected.connect(self.slot_usb_disconnected)
         self.wthread.start()
+
+
+        self.sthread = SocketThread()
+        self.sthread.signal_fileChanged.connect(self.slot_tg_file_changed)
+        self.sthread.start()
