@@ -7,6 +7,7 @@ import math
 import sys
 import shutil
 from time import time
+from PyPDF2 import PdfReader
 
 class ZoomSelector(QWidget):
 
@@ -44,6 +45,11 @@ class PDFViewer(QWidget):
         self.m_pdf_document.load(doc_location)
         self.slot_page_selected(0)
 
+        with open(doc_location, "rb") as filehandle:  
+            pdf = PdfReader(filehandle)
+            self.count_of_pages = len(pdf.pages)
+
+
     Slot(int)
     def slot_page_selected(self, page):
         nav = self.m_pdf_view.pageNavigator()
@@ -53,21 +59,22 @@ class PDFViewer(QWidget):
     Slot()
     def slot_prev_page(self):
         nav = self.m_pdf_view.pageNavigator()
-        
+
         if nav.currentPage() > 0:
             nav.jump(nav.currentPage() - 1, QPoint(), nav.currentZoom())
 
     Slot()
     def slot_next_page(self):
         nav = self.m_pdf_view.pageNavigator()
-        print(nav.currentPage())
-        nav.jump(nav.currentPage() + 1, QPoint(), nav.currentZoom())
+        if nav.currentPage() < self.count_of_pages - 1:
+           nav.jump(nav.currentPage() + 1, QPoint(), nav.currentZoom())
 
 
 
     def __init__(self):
         super().__init__()
 
+        self.count_of_pages = 0
         self.m_fileDialog = None
         
         self.m_pdf_document = QPdfDocument(self)
