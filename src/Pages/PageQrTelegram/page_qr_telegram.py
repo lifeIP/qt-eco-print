@@ -20,6 +20,15 @@ class PageQrTelegram(QWidget):
         self.qr_tg.load("./icons/tg_qr.png")
         self.initUI()
 
+
+
+    signal_back_clicked = Signal()
+
+    Slot()
+    def slot_back_clicked(self):
+        self.signal_back_clicked.emit()
+
+
     def initUI(self):
 
         self.qr_label = QLabel()
@@ -46,6 +55,9 @@ class PageQrTelegram(QWidget):
         placeholder_h_1.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
 
+        self.btn_back = QPushButton("Назад")
+        self.btn_back.clicked.connect(self.slot_back_clicked)
+
         self.h_layout = QHBoxLayout()
         self.h_layout.addWidget(placeholder_h)
         self.h_layout.addWidget(self.qr_label)
@@ -57,6 +69,7 @@ class PageQrTelegram(QWidget):
         self.v_layout.addWidget(self.info_label)
         self.v_layout.addLayout(self.h_layout)
         self.v_layout.addWidget(placeholder_v_1)
+        self.v_layout.addWidget(self.btn_back)
         
 
         

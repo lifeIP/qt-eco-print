@@ -13,17 +13,26 @@ class PageUserGreeting(QWidget):
     signal_btn_usb_clicked = Signal()
     signal_btn_tg_clicked = Signal()
 
+
     Slot()
     def slot_btn_usb_clicked(self):
-        self.msgBox.exec()
+        if self.flag == 0:
+            self.msgBox.exec()
+        else: 
+            self.signal_btn_usb_clicked.emit()
 
     Slot()
     def slot_btn_tg_clicked(self):
         self.signal_btn_tg_clicked.emit()
         
+    
+    Slot(int)
+    def slot_set_flag(self, flag):
+        self.flag = flag
 
     def __init__(self):
         super().__init__()
+        self.flag = 0
         self.initUI()
     
     def initUI(self):

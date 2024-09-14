@@ -161,6 +161,10 @@ class PageSelectingPrintSource(QWidget):
 
     Slot()
     def prevPage(self):
+        if self.page_id == 0: self.button_prev.setDisabled(True)
+        if self.page_id == 1: self.button_prev.setDisabled(True)
+        if self.page_id < (len(self.kuchaFilov) - 1): self.button_next.setDisabled(False)
+
         for file in self.kuchaFilov[self.page_id]:
             # self.grid.removeWidget(file)
             file.setParent(None)
@@ -168,6 +172,7 @@ class PageSelectingPrintSource(QWidget):
         index_x = 0
         index_y = 0
         
+
         for file in self.kuchaFilov[self.page_id - 1]:
             file.setMinimumWidth(int(self.width()*0.4))
             self.grid.addWidget(file, index_y, index_x)
@@ -179,8 +184,7 @@ class PageSelectingPrintSource(QWidget):
 
         self.page_id -= 1
 
-        if self.page_id == 0: self.button_prev.setDisabled(True)
-        if self.page_id < (len(self.kuchaFilov) - 1): self.button_next.setDisabled(False)
+        
 
 
     Slot()
@@ -197,6 +201,14 @@ class PageSelectingPrintSource(QWidget):
     def slot_doc_clicked(self, fullPath):
         self.signal_document_selected_for_printing.emit(fullPath)
         self.signal_review_doc_changed.emit()
+
+
+    
+    signal_back_clicked = Signal()
+
+    Slot()
+    def slot_back_clicked(self):
+        self.signal_back_clicked.emit()
 
 
     def initUI(self):
@@ -223,7 +235,10 @@ class PageSelectingPrintSource(QWidget):
         self.button_prev.clicked.connect(self.prevPage)
         self.button_next = QPushButton("Вперёд")
         self.button_next.clicked.connect(self.nextPage)
+
         self.button_cancel = QPushButton("Отмена")
+        self.button_cancel.clicked.connect(self.slot_back_clicked)
+
         self.placeholder_1 = QWidget()
         self.placeholder_1.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
         self.h_layout = QHBoxLayout()

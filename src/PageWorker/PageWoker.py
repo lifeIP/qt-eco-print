@@ -176,6 +176,7 @@ class PageWorker(QWidget):
             # print("slot: ", path)
 
         print("slot_usb_connected")
+        self.userGreeting.slot_set_flag(1)
 
     Slot()
     def slot_usb_disconnected(self):
@@ -183,6 +184,7 @@ class PageWorker(QWidget):
         if self.qsLayout.currentIndex() == 1:
             self.qsLayout.setCurrentIndex(0)
         print("slot_usb_disconnected")
+        self.userGreeting.slot_set_flag(0)
 
 
 
@@ -196,6 +198,15 @@ class PageWorker(QWidget):
         self.signal_review_document_changed.emit(f"../documents/{filePath}")
         self.qsLayout.setCurrentIndex(3)
 
+
+    Slot()
+    def slot_back_clicked(self):
+        self.qsLayout.setCurrentIndex(1)
+
+
+    Slot()
+    def slot_btn_back_clicked(self):
+        self.qsLayout.setCurrentIndex(0)
 
 
     Slot()
@@ -213,23 +224,28 @@ class PageWorker(QWidget):
         
         from src.Pages.PageUserGreeting.page_user_greeting import PageUserGreeting
         self.userGreeting =  PageUserGreeting()
+        self.userGreeting.signal_btn_usb_clicked.connect(self.slot_back_clicked)
         self.userGreeting.signal_btn_usb_clicked.connect(self.slot_userGreeting_btn_usb_clicked)
         self.userGreeting.signal_btn_tg_clicked.connect(self.slot_userGreeting_btn_tg_clicked)
 
 
         from src.Pages.PageSelectingPrintSource.page_selecting_print_source import PageSelectingPrintSource
         self.selectingPrintSource = PageSelectingPrintSource()
+        self.selectingPrintSource.signal_back_clicked.connect(self.slot_btn_back_clicked)
         self.signal_loadFiles.connect(self.selectingPrintSource.slot_loadFiles)
         self.selectingPrintSource.signal_review_doc_changed.connect(self.slot_review_doc_changed)
 
+
         from src.Pages.PageQrTelegram.page_qr_telegram import PageQrTelegram
         self.pageQrTelegram = PageQrTelegram()
+        self.pageQrTelegram.signal_back_clicked.connect(self.slot_btn_back_clicked)
         
 
         from src.Pages.PageReviewReceivedDocument.page_review_received_document import PageReviewReceivedDocument
         self.reviewReceivedDocument = PageReviewReceivedDocument()
         self.selectingPrintSource.signal_document_selected_for_printing.connect(self.reviewReceivedDocument.slot_document_selected_for_printing)
         self.signal_review_document_changed.connect(self.reviewReceivedDocument.slot_document_selected_for_printing)
+        self.reviewReceivedDocument.signal_back_clicked.connect(self.slot_btn_back_clicked)
 
 
         from src.Pages.PagePaymentForPrinting.page_payment_for_printing import PagePaymentForPrinting
