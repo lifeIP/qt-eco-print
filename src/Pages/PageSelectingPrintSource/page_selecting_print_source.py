@@ -36,6 +36,7 @@ class File(QWidget):
             self.btnClicked(self.fullFilePath)
         else: 
             self.docClicked(self.fullFilePath)
+            
 
     def initUI(self):
         self.icon = QPushButton(self.fileName_1)
@@ -81,6 +82,9 @@ class PageSelectingPrintSource(QWidget):
                     
             return all_files
         except: return None
+
+
+    signal_review_doc_changed = Signal()
 
 
     Slot(str)
@@ -192,6 +196,7 @@ class PageSelectingPrintSource(QWidget):
     Slot(str)
     def slot_doc_clicked(self, fullPath):
         self.signal_document_selected_for_printing.emit(fullPath)
+        self.signal_review_doc_changed.emit()
 
 
     def initUI(self):

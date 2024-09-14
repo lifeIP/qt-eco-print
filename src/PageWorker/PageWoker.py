@@ -33,7 +33,6 @@ class SocketThread(QThread):
     def slot_set_session_id(self, session_id):
         self.session_id = session_id
 
-    
     signal_fileChanged = Signal(str)
 
     
@@ -193,11 +192,15 @@ class PageWorker(QWidget):
 
     Slot(str)
     def slot_tg_file_changed(self, filePath):
-
-        self.signal_review_document_changed.emit(f"../tgbot-global-eco-print/documents/{filePath}")
+        print(f'../documents/{filePath}')
+        self.signal_review_document_changed.emit(f"../documents/{filePath}")
         self.qsLayout.setCurrentIndex(3)
 
 
+
+    Slot()
+    def slot_review_doc_changed(self):
+        self.qsLayout.setCurrentIndex(3)
 
 
     signal_loadFiles = Signal(str)
@@ -217,7 +220,7 @@ class PageWorker(QWidget):
         from src.Pages.PageSelectingPrintSource.page_selecting_print_source import PageSelectingPrintSource
         self.selectingPrintSource = PageSelectingPrintSource()
         self.signal_loadFiles.connect(self.selectingPrintSource.slot_loadFiles)
-        
+        self.selectingPrintSource.signal_review_doc_changed.connect(self.slot_review_doc_changed)
 
         from src.Pages.PageQrTelegram.page_qr_telegram import PageQrTelegram
         self.pageQrTelegram = PageQrTelegram()
@@ -226,7 +229,8 @@ class PageWorker(QWidget):
         from src.Pages.PageReviewReceivedDocument.page_review_received_document import PageReviewReceivedDocument
         self.reviewReceivedDocument = PageReviewReceivedDocument()
         self.selectingPrintSource.signal_document_selected_for_printing.connect(self.reviewReceivedDocument.slot_document_selected_for_printing)
-        
+        self.signal_review_document_changed.connect(self.reviewReceivedDocument.slot_document_selected_for_printing)
+
 
         from src.Pages.PagePaymentForPrinting.page_payment_for_printing import PagePaymentForPrinting
         self.paymentForPrinting = PagePaymentForPrinting()
