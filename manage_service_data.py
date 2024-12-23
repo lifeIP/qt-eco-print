@@ -52,6 +52,10 @@ def set_service_data_into_file(prop =
     if prop not in LIST_OF_VALUES: 
         print("not in LIST_OF_VALUES")
         return
+    
+    value_2 = get_service_data_from_file(prop)
+    if value == value_2: return
+
     if len(value) == 0:
         return
 

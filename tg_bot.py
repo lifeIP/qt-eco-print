@@ -23,11 +23,13 @@ class Session:
 
     def init_new_session(self, session_ID:str, chat_ID:str):
         app_status = get_service_data_from_file("app_status")
+        
+
         if app_status is None:
             return -1
         
         if app_status == "busy":
-            return -1
+            return -2
         
         if app_status == "free":
             if session_ID != get_service_data_from_file("session_id"): return -1
@@ -38,7 +40,7 @@ class Session:
             # set_service_data_into_file("app_status", "busy")
             # set_service_data_into_file("bot_request", "newuser")
             return 1
-        return -1
+        return -3
     
     def set_file_path(self, path:str, chat_ID:str):
         if chat_ID == self.m_chat_id:
@@ -59,9 +61,10 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 router = Router()
+dp = Dispatcher()
+dp.include_routers(router)
 
-
-@router.message(F.document)
+@dp.message(F.document)
 async def get_doc(message: types.Message):
     path = secure_filename(message.document.file_name)
 
@@ -79,16 +82,12 @@ async def get_doc(message: types.Message):
         await message.answer("Ваш файл не подходит под условия(pdf)")
 
 
-
-dp = Dispatcher()
-dp.include_routers(router)
-
-
 @dp.message(Command('start'))
 async def handle_start(message: types.Message):
-    if client_part.init_new_session(session_ID=message.text[7:], chat_ID=str(message.chat.id)) == -1:
+    answer = client_part.init_new_session(session_ID=message.text[7:], chat_ID=str(message.chat.id))
+    if answer < 0:
         await message.answer("Привет! Спасибо что пользуешься нашими услугами🙂") 
-        await message.answer("В данный момент принтер занят")
+        await message.answer(f"В данный момент принтер занят")
     else:
         await message.answer("Привет! Спасибо что пользуешься нашими услугами🙂") 
         await message.answer("Адрес: г.Томск ул.Кирова д.56а")

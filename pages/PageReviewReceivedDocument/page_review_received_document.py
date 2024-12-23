@@ -58,7 +58,9 @@ class PDFViewer(QWidget):
     signal_change_zoom = Signal(int)
 
     Slot(str)
-    def slot_open(self, doc_location):
+    def slot_open(self, doc_location:str):
+        if "documents/documents/" in doc_location:
+            doc_location = "documents/" + doc_location.split("/")[-1]
         self.m_pdf_document.load(doc_location)
         self.slot_page_selected(0)
 
